@@ -244,9 +244,6 @@ const UI = {
 
 // ─── App ─── //
 const app = {
-  map: null,
-  marker: null,
-
   init() {
     this.initTheme();
     this.bindEvents();
@@ -373,66 +370,6 @@ const app = {
     });
     state.currentScreen = id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Initialize Leaflet Map if entering checkout screen
-    if (id === 'checkout') {
-      setTimeout(() => {
-        this.initMap();
-        if (this.map) {
-          this.map.invalidateSize();
-        }
-      }, 100);
-    }
-  },
-
-  // ─── Leaflet Map Setup ─── //
-  initMap() {
-    if (this.map) return; // Only instantiate once
-    
-    const defaultLatLng = [12.9716, 77.5946];
-    this.map = L.map('checkout-map', {
-      zoomControl: true,
-      scrollWheelZoom: false
-    }).setView(defaultLatLng, 13);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(this.map);
-    
-    this.marker = L.marker(defaultLatLng, { draggable: true }).addTo(this.map);
-    
-    this.updateAddressText(defaultLatLng[0], defaultLatLng[1]);
-    
-    this.marker.on('dragend', () => {
-      const pos = this.marker.getLatLng();
-      this.updateAddressText(pos.lat, pos.lng);
-      this.map.panTo(pos);
-    });
-    
-    this.map.on('click', (e) => {
-      const pos = e.latlng;
-      this.marker.setLatLng(pos);
-      this.updateAddressText(pos.lat, pos.lng);
-      this.map.panTo(pos);
-    });
-  },
-
-  async updateAddressText(lat, lng) {
-    const textEl = document.getElementById('selected-address-text');
-    if (!textEl) return;
-    textEl.innerText = 'LOCATING COORDINATES...';
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
-      const data = await res.json();
-      if (data && data.display_name) {
-        textEl.innerText = data.display_name.toUpperCase();
-      } else {
-        textEl.innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      }
-    } catch (err) {
-      textEl.innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
   },
 
   // ─── Screen 1: Category Select ─── //
@@ -996,9 +933,9 @@ const app = {
     UI.paymentSuccessCard.classList.add('hidden');
     
     const statuses = [
-      'INITIALIZING PAYMENT...',
-      'AUTHORIZING TRANSACTION...',
-      'CONFIRMING PAYMENT...'
+      'INITIALIZING PRAVA SECURE CHANNEL...',
+      'AUTHORIZING PRAVA SMART CONTRACT...',
+      'CONFIRMING PRAVA BLOCKCHAIN SETTLEMENT...'
     ];
 
     setTimeout(() => {
@@ -1041,17 +978,9 @@ const app = {
     }
 
     const btn = UI.btnCheckout;
-    btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> CONFIRM & PAY';
+    btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> PROCEED';
     btn.className = 'w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col';
     btn.classList.remove('pointer-events-none');
-
-    // Reset Map marker location to default
-    if (this.marker && this.map) {
-      const defaultLatLng = [12.9716, 77.5946];
-      this.marker.setLatLng(defaultLatLng);
-      this.map.setView(defaultLatLng, 13);
-      this.updateAddressText(defaultLatLng[0], defaultLatLng[1]);
-    }
 
     this.showScreen('prompt');
   },

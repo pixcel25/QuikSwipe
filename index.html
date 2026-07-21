@@ -389,26 +389,6 @@
           <!-- Right Column: Sticky Delivery & Summary -->
           <div class="w-full lg:w-[360px] shrink-0 lg:sticky lg:top-24 space-y-6">
             
-            <!-- Delivery Location Card -->
-            <div class="bg-card-bg border border-border-col p-6">
-              <h3 class="text-base font-bold mb-3 text-text flex items-center gap-2">
-                <i class="fa-solid fa-map-location-dot text-accent"></i>
-                <span>DELIVERY ADDRESS</span>
-              </h3>
-              <p class="text-[10px] font-mono text-text/60 mb-4 uppercase">Set the final delivery address on map grid.</p>
-              
-              <!-- Map Container -->
-              <div id="checkout-map" class="h-44 w-full border border-border-col bg-bg mb-4"></div>
-              
-              <!-- Address Output -->
-              <div class="flex items-start gap-3 bg-bg border border-border-col p-4 text-[11px] text-text">
-                <i class="fa-solid fa-location-dot text-accent-orange mt-0.5 text-xs shrink-0"></i>
-                <div class="min-w-0 font-mono">
-                  <span class="font-bold block mb-1 uppercase tracking-wider text-accent">DELIVERY ADDRESS</span>
-                  <span id="selected-address-text" class="text-text/80 leading-relaxed block break-words uppercase">LOCATING BANGALORE...</span>
-                </div>
-              </div>
-            </div>
 
             <!-- Order Summary Card -->
             <div class="bg-card-bg border border-border-col p-6 sm:p-8">
@@ -427,7 +407,7 @@
                 class="w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
               >
                 <i class="fa-solid fa-lock text-xs"></i>
-                CONFIRM & PAY
+                PROCEED
               </button>
               <p class="text-center text-[9px] font-mono text-text/40 mt-4"><i class="fa-solid fa-shield-halved mr-1"></i> SECURE PAYMENT PROCESSING</p>
             </div>
@@ -445,7 +425,7 @@
     <!-- Loader Section -->
     <div id="payment-loader" class="flex flex-col items-center justify-center max-w-md text-center">
       <div class="w-16 h-16 border-2 border-t-accent border-text/20 animate-spin mb-6"></div>
-      <h3 class="text-xl font-bold mb-2 font-mono tracking-widest">PROCESSING PAYMENT...</h3>
+      <h3 class="text-xl font-bold mb-2 font-mono tracking-widest">PAYMENT WITH PRAVA...</h3>
       <p class="text-text/60 text-xs font-mono uppercase" id="payment-status-text">INITIALIZING SECURE PAYMENT...</p>
     </div>
 
