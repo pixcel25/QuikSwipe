@@ -556,7 +556,7 @@ const app = {
   renderTabs() {
     UI.categoryTabs.innerHTML = '';
     const cat = state.categories[state.currentCategoryIndex];
-    UI.swipeTitle.innerText = cat ? `${cat.title}` : 'MANIFEST COMPLETE';
+    UI.swipeTitle.innerText = cat ? `${cat.title}` : 'ALL DONE!';
 
     state.categories.forEach((c, idx) => {
       const isActive = idx === state.currentCategoryIndex;
@@ -648,7 +648,7 @@ const app = {
               <div><i class="fa-solid fa-check text-[9px] text-accent mr-1"></i> VERIFIED QUALITY</div>
               <div><i class="fa-solid fa-truck text-[9px] text-accent mr-1"></i> FAST SHIPPING</div>
               <div><i class="fa-solid fa-rotate-left text-[9px] text-accent mr-1"></i> EASY RETURNS</div>
-              <div><i class="fa-solid fa-box text-[9px] text-accent mr-1"></i> ROASTER PACKED</div>
+              <div><i class="fa-solid fa-box text-[9px] text-accent mr-1"></i> SECURE PACKAGING</div>
             </div>
           </div>
         </div>
@@ -806,8 +806,8 @@ const app = {
       UI.cartItems.innerHTML = `
         <div class="text-center text-text/60 py-16 bg-card-bg border border-dashed border-border-col font-mono text-xs uppercase">
           <i class="fa-solid fa-folder-closed text-3xl mb-3 block text-text/40"></i>
-          <p class="font-bold">No manifest items loaded</p>
-          <p class="text-[10px] mt-1">Swipe kept choices to add items here</p>
+          <p class="font-bold">No items selected</p>
+          <p class="text-[10px] mt-1">Swipe right on choices to add items here</p>
         </div>`;
     } else {
       const key = state.selectedCategory;
@@ -987,9 +987,9 @@ const app = {
     UI.paymentSuccessCard.classList.add('hidden');
     
     const statuses = [
-      'INITIALIZING SECURE PRAVA SETTLEMENT PARSING...',
-      'AUTHORIZING MULTI-AGENT CONTRACT SIGNATURES...',
-      'CONFIRMING BLOCKCHAIN VALIDATION AND SETTLEMENT...'
+      'INITIALIZING PAYMENT...',
+      'AUTHORIZING TRANSACTION...',
+      'CONFIRMING PAYMENT...'
     ];
 
     setTimeout(() => {
@@ -1032,7 +1032,7 @@ const app = {
     }
 
     const btn = UI.btnCheckout;
-    btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> AUTHORIZE SIGNATURE VIA PRAVA';
+    btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> CONFIRM & PAY';
     btn.className = 'w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col';
     btn.classList.remove('pointer-events-none');
 
