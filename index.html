@@ -303,7 +303,11 @@
     </section>
 
     <!-- ========== SCREEN 4: SWIPE (Sharp structures) ========== -->
-    <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-6 items-center justify-center">
+    <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-6">
+      <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+        
+        <!-- Left: Swipe Area -->
+        <div class="flex-1 flex flex-col items-center w-full">
 
       <!-- Category Tabs -->
       <div class="w-full max-w-2xl mb-8 text-center">
@@ -346,6 +350,21 @@
               <i class="fa-solid fa-folder-open"></i>
               <span>REVIEW SELECTIONS</span>
             </button>
+          </div>
+        </div>
+        
+        <!-- Right: Mini Cart (lg screens) -->
+        <div class="w-full lg:w-[320px] shrink-0 bg-card-bg border border-border-col p-6 hidden lg:flex flex-col h-[700px] sticky top-24">
+          <div class="flex items-center justify-between border-b border-border-col pb-4 mb-4">
+            <h4 class="font-bold text-sm text-text font-mono uppercase tracking-wider">CART SUMMARY</h4>
+            <span id="mini-cart-count" class="bg-bg text-accent text-[10px] font-mono px-2 py-1 border border-border-col">0 ITEMS</span>
+          </div>
+          <div id="mini-cart-items" class="flex-1 overflow-y-auto no-scrollbar space-y-3">
+            <div class="text-center text-text/50 py-10 font-mono text-xs">Swipe right to add items</div>
+          </div>
+          <div class="border-t border-border-col pt-4 mt-4 flex items-center justify-between font-mono font-bold">
+            <span class="text-xs text-text/70">SUBTOTAL</span>
+            <span id="mini-cart-total" class="text-accent text-lg">₹0</span>
           </div>
         </div>
       </div>

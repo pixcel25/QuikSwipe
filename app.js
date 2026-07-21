@@ -495,6 +495,8 @@ const app = {
     state.currentCardIndex = 0;
     this.renderTabs();
     this.renderCards();
+    this.updateMiniCart();
+    this.updateProceedButton();
     this.showScreen('swipe');
   },
 
@@ -741,6 +743,69 @@ const app = {
     } else {
       UI.cartBadge.classList.add('hidden');
     }
+    this.updateMiniCart();
+    this.updateProceedButton();
+  },
+
+  updateMiniCart() {
+    const itemsContainer = document.getElementById('mini-cart-items');
+    const countEl = document.getElementById('mini-cart-count');
+    const totalEl = document.getElementById('mini-cart-total');
+    if (!itemsContainer) return;
+
+    itemsContainer.innerHTML = '';
+    let total = 0;
+    let count = 0;
+
+    if (state.cart.length === 0) {
+      itemsContainer.innerHTML = '<div class="text-center text-text/50 py-10 font-mono text-xs">Swipe right to add items</div>';
+    } else {
+      state.cart.forEach(item => {
+        total += item.price * item.quantity;
+        count += item.quantity;
+        
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-3 bg-bg border border-border-col p-2 animate-fade-up';
+        row.innerHTML = `
+          <div class="w-8 h-8 bg-card-bg border border-border-col flex items-center justify-center shrink-0 text-lg">${item.image}</div>
+          <div class="flex-1 min-w-0">
+            <h5 class="text-[10px] font-bold text-text truncate uppercase font-['Oswald'] tracking-wide">${item.name}</h5>
+            <div class="flex justify-between mt-0.5">
+              <span class="text-[9px] text-text/60 font-mono">x${item.quantity}</span>
+              <span class="text-[10px] text-accent font-bold font-mono">${formatINR(item.price * item.quantity)}</span>
+            </div>
+          </div>
+        `;
+        itemsContainer.appendChild(row);
+      });
+    }
+
+    if (countEl) countEl.innerText = `${count} ITEM${count !== 1 ? 'S' : ''}`;
+    if (totalEl) totalEl.innerText = formatINR(total);
+  },
+
+  updateProceedButton() {
+    if (!state.categories || state.categories.length === 0) return;
+    
+    let allCategoriesSatisfied = true;
+    for (const cat of state.categories) {
+      const hasItem = state.cart.some(cartItem => cat.items.some(catItem => catItem.id === cartItem.id));
+      if (!hasItem) {
+        allCategoriesSatisfied = false;
+        break;
+      }
+    }
+
+    const btn = document.getElementById('btn-swipe-done');
+    if (btn) {
+      if (allCategoriesSatisfied) {
+        btn.removeAttribute('disabled');
+        btn.classList.remove('opacity-30', 'cursor-not-allowed');
+      } else {
+        btn.setAttribute('disabled', 'true');
+        btn.classList.add('opacity-30', 'cursor-not-allowed');
+      }
+    }
   },
 
   // ─── Screen 5: Unified Review & Checkout ─── //
@@ -976,6 +1041,9 @@ const app = {
     if (UI.btnSubmitPrompt) {
       UI.btnSubmitPrompt.setAttribute('disabled', 'true');
     }
+    
+    this.updateMiniCart();
+    this.updateProceedButton();
 
     const btn = UI.btnCheckout;
     btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> PROCEED';
