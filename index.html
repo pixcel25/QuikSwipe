@@ -306,54 +306,7 @@
     <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-6">
       <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
         
-        <!-- Left: Swipe Area -->
-        <div class="flex-1 flex flex-col items-center w-full">
-
-      <!-- Category Tabs -->
-      <div class="w-full max-w-2xl mb-8 text-center">
-        <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// SWIPING... //</span>
-        <h3 class="text-2xl font-bold mb-4 text-text" id="swipe-title">LOADING...</h3>
-        <div class="flex flex-wrap justify-center gap-2" id="category-tabs"></div>
-      </div>
-
-      <!-- Swipe Area -->
-      <div class="w-full flex flex-col items-center flex-1">
-        <div class="relative w-full max-w-[460px] sm:max-w-[620px] h-[580px] sm:h-[700px]" id="card-stack">
-          <!-- Cards go here -->
-          <div class="absolute inset-0 flex items-center justify-center text-text/50 flex-col bg-card-bg border border-border-col">
-            <div class="w-14 h-14 bg-bg flex items-center justify-center mb-3 border border-border-col">
-              <i class="fa-solid fa-clipboard-check text-2xl text-accent"></i>
-            </div>
-            <p class="text-xs font-mono uppercase tracking-widest">All items reviewed.</p>
-          </div>
-        </div>
-
-        <!-- Swipe & Done Controls Group -->
-        <div class="flex flex-col items-center gap-6 mt-8 w-full max-w-[460px] sm:max-w-[620px]">
-          <!-- Swipe Buttons -->
-          <div class="flex justify-center items-center gap-8">
-            <button id="btn-swipe-left" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-rose-500 hover:bg-rose-950/20 hover:scale-105 active:scale-95 transition-all z-10">
-              <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-            <button id="btn-swipe-right" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-emerald-500 hover:bg-emerald-950/20 hover:scale-105 active:scale-95 transition-all z-10">
-              <i class="fa-solid fa-check text-xl"></i>
-            </button>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
-            <button id="btn-skip-topic" type="button" class="w-full sm:w-auto bg-card-bg hover:bg-bg text-text px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
-              <i class="fa-solid fa-forward-step"></i>
-              <span>SKIP TOPIC</span>
-            </button>
-            <button id="btn-swipe-done" type="button" class="w-full sm:w-auto bg-text text-bg px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
-              <i class="fa-solid fa-folder-open"></i>
-              <span>REVIEW SELECTIONS</span>
-            </button>
-          </div>
-        </div>
-        
-        <!-- Right: Mini Cart (lg screens) -->
+        <!-- Left: Mini Cart (lg screens) -->
         <div class="w-full lg:w-[320px] shrink-0 bg-card-bg border border-border-col p-6 hidden lg:flex flex-col h-[700px] sticky top-24">
           <div class="flex items-center justify-between border-b border-border-col pb-4 mb-4">
             <h4 class="font-bold text-sm text-text font-mono uppercase tracking-wider">CART SUMMARY</h4>
@@ -363,81 +316,77 @@
             <div class="text-center text-text/50 py-10 font-mono text-xs">Swipe right to add items</div>
           </div>
           <div class="border-t border-border-col pt-4 mt-4 flex items-center justify-between font-mono font-bold">
-            <span class="text-xs text-text/70">SUBTOTAL</span>
+            <span class="text-xs text-text/70">TOTAL</span>
             <span id="mini-cart-total" class="text-accent text-lg">₹0</span>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- ========== SCREEN 5: REVIEW & CHECKOUT (Opaque structures) ========== -->
-    <section id="screen-checkout" class="screen flex-col flex-1 px-6 py-10 md:py-16">
-      <div class="max-w-6xl mx-auto w-full">
-        <!-- Title Header -->
-        <div class="text-center mb-10">
-          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// CHECKOUT & REVIEW //</span>
-          <h2 class="text-3xl sm:text-4xl font-bold text-text">REVIEW YOUR ITEMS</h2>
-          <p class="text-text/70 text-xs font-mono uppercase mt-2">Adjust quantities, confirm delivery address, and authorize payment.</p>
-        </div>
-
-        <div class="flex flex-col lg:flex-row gap-8 items-start">
-          <!-- Left Column: Items grouped by Category/Track -->
-          <div class="flex-1 min-w-0 w-full">
-            <div class="flex items-center justify-between mb-6 pb-2 border-b border-border-col">
-              <h3 class="text-lg font-bold text-text">SELECTED ITEMS</h3>
-              <span class="bg-card-bg text-accent text-xs font-mono border border-border-col px-3 py-1.5" id="cart-count-label">0 ITEMS</span>
-            </div>
-            
-            <div id="cart-items" class="space-y-6">
-              <!-- JS populated: Grouped by category track, with steppers and delete buttons -->
-            </div>
-
-            <!-- Back to Swipe early navigation link button -->
-            <div class="mt-8 pt-4 border-t border-border-col">
-              <button
-                id="btn-back-to-swipe"
-                type="button"
-                class="bg-card-bg hover:bg-bg border border-border-col text-text px-6 py-3 font-bold text-xs tracking-widest uppercase transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:shadow-sm"
-              >
-                <i class="fa-solid fa-arrow-left text-xs"></i>
-                <span>RETURN TO SWIPING MODE</span>
-              </button>
-            </div>
+        <!-- Right: Swipe Area -->
+        <div class="flex-1 flex flex-col items-center w-full min-w-0">
+          <!-- Category Tabs -->
+          <div class="w-full max-w-2xl mb-8 text-center">
+            <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// SWIPING... //</span>
+            <h3 class="text-2xl font-bold mb-4 text-text" id="swipe-title">LOADING...</h3>
+            <div class="flex flex-wrap justify-center gap-2" id="category-tabs"></div>
           </div>
 
-          <!-- Right Column: Sticky Delivery & Summary -->
-          <div class="w-full lg:w-[360px] shrink-0 lg:sticky lg:top-24 space-y-6">
-            
-
-            <!-- Order Summary Card -->
-            <div class="bg-card-bg border border-border-col p-6 sm:p-8">
-              <h3 class="text-base font-bold mb-5 text-text">ORDER SUMMARY</h3>
-              <div class="space-y-3 mb-5 text-text/70 text-xs font-mono border-b border-border-col pb-5">
-                <div class="flex justify-between"><span>SUBTOTAL</span><span class="text-text font-bold" id="summary-subtotal">₹0</span></div>
-                <div class="flex justify-between"><span>TAX / GST (18%)</span><span class="text-text font-bold" id="summary-tax">₹0</span></div>
+          <!-- Swipe Area -->
+          <div class="w-full flex flex-col items-center flex-1">
+            <div class="relative w-full max-w-[460px] sm:max-w-[620px] h-[580px] sm:h-[700px]" id="card-stack">
+              <!-- Cards go here -->
+              <div class="absolute inset-0 flex items-center justify-center text-text/50 flex-col bg-card-bg border border-border-col">
+                <div class="w-14 h-14 bg-bg flex items-center justify-center mb-3 border border-border-col">
+                  <i class="fa-solid fa-clipboard-check text-2xl text-accent"></i>
+                </div>
+                <p class="text-xs font-mono uppercase tracking-widest">All items reviewed.</p>
               </div>
-              <div class="flex justify-between items-center mb-6">
-                <span class="text-text text-sm font-mono">TOTAL AMOUNT</span>
-                <span class="text-2xl font-bold text-accent" id="cart-total">₹0</span>
-              </div>
-              <button
-                id="btn-checkout"
-                type="button"
-                class="w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
-              >
-                <i class="fa-solid fa-lock text-xs"></i>
-                PROCEED
-              </button>
-              <p class="text-center text-[9px] font-mono text-text/40 mt-4"><i class="fa-solid fa-shield-halved mr-1"></i> SECURE PAYMENT PROCESSING</p>
             </div>
 
+            <!-- Swipe & Done Controls Group -->
+            <div class="flex flex-col items-center gap-6 mt-8 w-full max-w-[460px] sm:max-w-[620px]">
+              <!-- Swipe Buttons -->
+              <div class="flex justify-center items-center gap-8">
+                <button id="btn-swipe-left" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-rose-500 hover:bg-rose-950/20 hover:scale-105 active:scale-95 transition-all z-10">
+                  <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <button id="btn-swipe-right" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-emerald-500 hover:bg-emerald-950/20 hover:scale-105 active:scale-95 transition-all z-10">
+                  <i class="fa-solid fa-check text-xl"></i>
+                </button>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button id="btn-skip-topic" type="button" class="w-full sm:w-auto bg-card-bg hover:bg-bg text-text px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
+                  <i class="fa-solid fa-forward-step"></i>
+                  <span>SKIP TOPIC</span>
+                </button>
+                <button id="btn-swipe-done" type="button" class="w-full sm:w-auto bg-text text-bg px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
+                  <i class="fa-solid fa-lock"></i>
+                  <span>PROCEED TO PAYMENT</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
       </div>
     </section>
+
+
 
   </main>
+
+  <!-- ========== PROCEED CONFIRMATION POPUP ========== -->
+  <div id="proceed-popup" class="fixed inset-0 bg-bg/95 z-50 hidden flex-col items-center justify-center text-text px-6">
+    <div class="bg-card-bg border border-border-col p-8 max-w-md w-full animate-fade-up">
+      <h3 class="text-xl font-bold mb-2 font-mono tracking-widest text-text">CONFIRM PAYMENT</h3>
+      <p class="text-text/70 mb-6 font-mono text-sm">You have finalized items across all topics. Your total amount due is <span id="popup-total" class="font-bold text-accent">₹0</span>.</p>
+      <div class="flex gap-4 w-full">
+        <button id="btn-cancel-proceed" type="button" class="w-1/2 py-3 bg-card-bg border border-border-col hover:bg-bg text-text font-bold text-xs uppercase tracking-widest transition-all">CANCEL</button>
+        <button id="btn-confirm-proceed" type="button" class="w-1/2 py-3 bg-accent hover:opacity-95 text-bg font-bold text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-lock text-[10px]"></i> PROCEED</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ========== PAYMENT SUCCESS DIALOG OVERLAY ========== -->
   <div id="payment-overlay" class="fixed inset-0 bg-bg/98 z-50 hidden flex-col items-center justify-center text-text px-6">

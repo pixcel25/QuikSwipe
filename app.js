@@ -316,33 +316,44 @@ const app = {
       this.renderCards();
     });
 
-    // Done Swiping button click -> goes directly to Checkout
+    // Done Swiping button click -> shows Proceed Popup
     UI.btnSwipeDone.addEventListener('click', (e) => {
       e.preventDefault();
-      this.showScreen('checkout');
-      this.renderCheckout();
-    });
-
-    // Back to Swipe from Checkout Screen
-    UI.btnBackToSwipe.addEventListener('click', (e) => {
-      e.preventDefault();
-      state.currentCategoryIndex = 0;
-      state.currentCardIndex = 0;
-      this.startSwiping();
+      this.showProceedPopup();
     });
 
     UI.cartIcon.addEventListener('click', (e) => {
       e.preventDefault();
-      if (state.cart.length > 0) {
-        this.showScreen('checkout');
-        this.renderCheckout();
+      const btn = document.getElementById('btn-swipe-done');
+      if (btn && !btn.hasAttribute('disabled')) {
+        this.showProceedPopup();
       }
     });
 
-    UI.btnCheckout.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.handleCheckout();
-    });
+    const btnCancelProceed = document.getElementById('btn-cancel-proceed');
+    if (btnCancelProceed) {
+      btnCancelProceed.addEventListener('click', (e) => {
+        e.preventDefault();
+        const popup = document.getElementById('proceed-popup');
+        if (popup) {
+          popup.classList.add('hidden');
+          popup.classList.remove('flex');
+        }
+      });
+    }
+
+    const btnConfirmProceed = document.getElementById('btn-confirm-proceed');
+    if (btnConfirmProceed) {
+      btnConfirmProceed.addEventListener('click', (e) => {
+        e.preventDefault();
+        const popup = document.getElementById('proceed-popup');
+        if (popup) {
+          popup.classList.add('hidden');
+          popup.classList.remove('flex');
+        }
+        this.handleCheckout();
+      });
+    }
 
     UI.btnSuccessClose.addEventListener('click', (e) => {
       e.preventDefault();
@@ -536,8 +547,10 @@ const app = {
     const category = state.categories[state.currentCategoryIndex];
     if (!category) {
       setTimeout(() => {
-        this.showScreen('checkout');
-        this.renderCheckout();
+        const btn = document.getElementById('btn-swipe-done');
+        if (btn && !btn.hasAttribute('disabled')) {
+          this.showProceedPopup();
+        }
       }, 400);
       return;
     }
@@ -808,180 +821,23 @@ const app = {
     }
   },
 
-  // ─── Screen 5: Unified Review & Checkout ─── //
-  renderCheckout() {
-    UI.cartItems.innerHTML = '';
-    let subtotal = 0;
-
-    if (state.cart.length === 0) {
-      UI.cartItems.innerHTML = `
-        <div class="text-center text-text/60 py-16 bg-card-bg border border-dashed border-border-col font-mono text-xs uppercase">
-          <i class="fa-solid fa-folder-closed text-3xl mb-3 block text-text/40"></i>
-          <p class="font-bold">No items selected</p>
-          <p class="text-[10px] mt-1">Swipe right on choices to add items here</p>
-        </div>`;
-    } else {
-      const key = state.selectedCategory;
-      const allCategories = MOCK_DATA[key].categories;
-
-      allCategories.forEach((cat, catIdx) => {
-        const itemsInCat = [];
-        state.cart.forEach((item, cartIdx) => {
-          if (cat.items.some(ci => ci.id === item.id)) {
-            itemsInCat.push({ item, cartIdx });
-            subtotal += item.price * item.quantity;
-          }
-        });
-
-        if (itemsInCat.length === 0) return;
-
-        // Render category block container
-        const container = document.createElement('div');
-        container.className = `category-group-block bg-card-bg p-5 border border-border-col space-y-3 animate-fade-up`;
-        container.style.animationDelay = `${catIdx * 0.08}s`;
-        container.id = `cat-block-${cat.id}`;
-
-        const header = document.createElement('div');
-        header.className = 'flex items-center gap-2 pb-2 border-b border-border-col mb-2 font-mono text-xs text-accent';
-        header.innerHTML = `
-          <span>${cat.icon}</span>
-          <h4 class="font-bold tracking-wider uppercase text-text">${cat.title}</h4>
-          <span class="text-[10px] text-text/50 ml-auto font-bold category-item-count">${itemsInCat.length} ITEM${itemsInCat.length !== 1 ? 'S' : ''}</span>
-        `;
-        container.appendChild(header);
-
-        itemsInCat.forEach(({ item, cartIdx }) => {
-          const itemTotal = item.price * item.quantity;
-          const row = document.createElement('div');
-          row.className = 'item-row-card flex flex-col sm:flex-row sm:items-center p-3 bg-bg border border-border-col hover:bg-card-bg transition-colors gap-3 sm:gap-4';
-          row.id = `item-row-${cartIdx}`;
-          row.innerHTML = `
-            <div class="flex items-center flex-1 min-w-0">
-              <div class="w-11 h-11 bg-card-bg border border-border-col rounded-none flex items-center justify-center text-2xl mr-3 shrink-0">${item.image}</div>
-              <div class="flex-1 min-w-0">
-                <h5 class="font-bold text-sm truncate text-text">${item.name.toUpperCase()}</h5>
-                <p class="text-[10px] text-text/60 truncate font-mono">${item.desc.toUpperCase()}</p>
-              </div>
-            </div>
-
-            <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-border-col">
-              <!-- Stepper -->
-              <div class="flex items-center border border-border-col bg-bg">
-                <button type="button" class="qty-minus-btn w-7 h-7 bg-card-bg hover:bg-border-col flex items-center justify-center text-text text-xs font-bold transition-colors" data-cart-index="${cartIdx}">-</button>
-                <span class="qty-value px-2 text-xs font-bold text-text min-w-[20px] text-center font-mono" data-qty-idx="${cartIdx}">${item.quantity}</span>
-                <button type="button" class="qty-plus-btn w-7 h-7 bg-card-bg hover:bg-border-col flex items-center justify-center text-text text-xs font-bold transition-colors" data-cart-index="${cartIdx}">+</button>
-              </div>
-
-              <!-- Price -->
-              <div class="font-bold text-accent text-sm sm:text-base min-w-[70px] text-right font-mono" data-price-idx="${cartIdx}">${formatINR(itemTotal)}</div>
-              
-              <!-- Trash Remove Button -->
-              <button type="button" class="cart-remove-btn w-8 h-8 bg-card-bg hover:bg-rose-950/20 text-text/60 hover:text-rose-600 transition-all shrink-0 flex items-center justify-center border border-border-col" data-cart-index="${cartIdx}" title="Remove">
-                <i class="fa-solid fa-trash-can text-xs"></i>
-              </button>
-            </div>
-          `;
-          container.appendChild(row);
-        });
-
-        UI.cartItems.appendChild(container);
-      });
-    }
-
-    this.recalculateSummaryDOM();
-    this.bindCheckoutRowEvents();
-  },
-
-  recalculateSummaryDOM() {
-    let subtotal = 0;
-    state.cart.forEach(c => subtotal += c.price * c.quantity);
-    const tax = Math.round(subtotal * 0.18);
-    const total = subtotal + tax;
-
-    document.getElementById('summary-subtotal').innerText = formatINR(subtotal);
-    document.getElementById('summary-tax').innerText = formatINR(tax);
-    UI.cartTotal.innerText = formatINR(total);
+  // ─── Payment Popup logic ─── //
+  showProceedPopup() {
+    let total = 0;
+    state.cart.forEach(item => {
+      total += item.price * item.quantity;
+    });
     
-    const totalItemsCount = state.cart.reduce((acc, curr) => acc + curr.quantity, 0);
-    document.getElementById('cart-count-label').innerText = `${totalItemsCount} ITEM${totalItemsCount !== 1 ? 'S' : ''}`;
-  },
-
-  bindCheckoutRowEvents() {
-    UI.cartItems.querySelectorAll('.qty-minus-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const idx = parseInt(btn.dataset.cartIndex);
-        const item = state.cart[idx];
-        if (item && item.quantity > 1) {
-          item.quantity--;
-          this.updateCartBadge();
-          
-          const qtyValEl = UI.cartItems.querySelector(`[data-qty-idx="${idx}"]`);
-          if (qtyValEl) qtyValEl.innerText = item.quantity;
-
-          const priceEl = UI.cartItems.querySelector(`[data-price-idx="${idx}"]`);
-          if (priceEl) priceEl.innerText = formatINR(item.price * item.quantity);
-
-          this.recalculateSummaryDOM();
-        }
-      });
-    });
-
-    UI.cartItems.querySelectorAll('.qty-plus-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const idx = parseInt(btn.dataset.cartIndex);
-        const item = state.cart[idx];
-        if (item) {
-          item.quantity++;
-          this.updateCartBadge();
-
-          const qtyValEl = UI.cartItems.querySelector(`[data-qty-idx="${idx}"]`);
-          if (qtyValEl) qtyValEl.innerText = item.quantity;
-
-          const priceEl = UI.cartItems.querySelector(`[data-price-idx="${idx}"]`);
-          if (priceEl) priceEl.innerText = formatINR(item.price * item.quantity);
-
-          this.recalculateSummaryDOM();
-        }
-      });
-    });
-
-    UI.cartItems.querySelectorAll('.cart-remove-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const idx = parseInt(btn.dataset.cartIndex);
-        this.removeFromCart(idx);
-        
-        const rowEl = document.getElementById(`item-row-${idx}`);
-        if (rowEl) {
-          rowEl.style.transition = 'opacity 0.2s, height 0.2s';
-          rowEl.style.opacity = '0';
-          setTimeout(() => {
-            rowEl.remove();
-            
-            const catGroup = btn.closest('.category-group-block');
-            if (catGroup) {
-              const rowsLeft = catGroup.querySelectorAll('.item-row-card');
-              if (rowsLeft.length === 0) {
-                catGroup.remove();
-              } else {
-                const labelEl = catGroup.querySelector('.category-item-count');
-                if (labelEl) {
-                  labelEl.innerText = `${rowsLeft.length} ITEM${rowsLeft.length !== 1 ? 's' : ''}`;
-                }
-              }
-            }
-
-            this.recalculateSummaryDOM();
-
-            if (state.cart.length === 0) {
-              this.renderCheckout();
-            }
-          }, 200);
-        }
-      });
-    });
+    const popupTotal = document.getElementById('popup-total');
+    if (popupTotal) {
+      popupTotal.innerText = formatINR(total);
+    }
+    
+    const popup = document.getElementById('proceed-popup');
+    if (popup) {
+      popup.classList.remove('hidden');
+      popup.classList.add('flex');
+    }
   },
 
   handleCheckout() {
@@ -1044,11 +900,6 @@ const app = {
     
     this.updateMiniCart();
     this.updateProceedButton();
-
-    const btn = UI.btnCheckout;
-    btn.innerHTML = '<i class="fa-solid fa-lock text-sm"></i> PROCEED';
-    btn.className = 'w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col';
-    btn.classList.remove('pointer-events-none');
 
     this.showScreen('prompt');
   },
