@@ -224,6 +224,7 @@ const UI = {
   btnSwipeLeft:       document.getElementById('btn-swipe-left'),
   btnSwipeRight:      document.getElementById('btn-swipe-right'),
   btnSwipeDone:       document.getElementById('btn-swipe-done'),
+  btnSkipTopic:       document.getElementById('btn-skip-topic'),
   btnBackToSwipe:     document.getElementById('btn-back-to-swipe'),
   cartIcon:           document.getElementById('cart-icon'),
   cartBadge:          document.getElementById('cart-badge'),
@@ -308,6 +309,14 @@ const app = {
     UI.btnSwipeRight.addEventListener('click', (e) => {
       e.preventDefault();
       this.swipe('right');
+    });
+
+    UI.btnSkipTopic.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.currentCategoryIndex++;
+      state.currentCardIndex = 0;
+      this.renderTabs();
+      this.renderCards();
     });
 
     // Done Swiping button click -> goes directly to Checkout
@@ -604,7 +613,7 @@ const app = {
       const scale = 1 - depth * 0.035;
 
       const card = document.createElement('div');
-      card.className = 'swipe-card border-t-8 border-t-accent border-x border-b border-border-col p-6 sm:p-8 flex flex-col bg-card-bg rounded-none shadow-none';
+      card.className = 'swipe-card border-t-8 border-t-accent border-x border-b border-border-col p-6 sm:p-8 flex flex-col bg-card-bg rounded-none shadow-none overflow-hidden';
       card.style.transform = `translateY(${offset}px) scale(${scale})`;
       card.style.zIndex = idx;
       card.dataset.index = items.length - 1 - idx;
