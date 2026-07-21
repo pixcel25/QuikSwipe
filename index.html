@@ -184,8 +184,68 @@
           </p>
         </div>
 
+        <!-- NEW CHATBOT RESPONSE AREA -->
+        <div id="chat-flow-area" class="max-w-2xl mx-auto mb-8 flex-col gap-6 hidden">
+          <!-- Preferences Chat Bubble -->
+          <div id="preferences-bubble" class="hidden flex-col items-start gap-2 animate-fade-up">
+            <div class="text-xs font-mono font-bold text-accent px-2 uppercase">AI Assistant</div>
+            <div class="bg-card-bg border border-border-col p-6 w-full relative">
+              <div class="absolute -top-[10px] left-[25px] w-0 h-0 border-l-[9px] border-l-transparent border-r-[9px] border-r-transparent border-b-[11px] border-b-card-bg"></div>
+              
+              <p class="text-sm text-text mb-4 font-sans">I've generated a default plan based on your selection. Please confirm or adjust your preferences below:</p>
+              
+              <div id="clarify-questions" class="space-y-4 mb-6"></div>
+              
+              <button id="btn-confirm-preferences" type="button" class="w-full bg-accent text-bg py-3 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all">
+                CONFIRM PREFERENCES
+              </button>
+            </div>
+          </div>
+
+          <!-- Tracks Chat Bubble -->
+          <div id="tracks-bubble" class="hidden flex-col items-start gap-2 animate-fade-up">
+            <div class="text-xs font-mono font-bold text-accent px-2 uppercase">AI Assistant</div>
+            <div class="bg-card-bg border border-border-col p-6 w-full relative">
+              <div class="absolute -top-[10px] left-[25px] w-0 h-0 border-l-[9px] border-l-transparent border-r-[9px] border-r-transparent border-b-[11px] border-b-card-bg"></div>
+              
+              <p class="text-sm text-text mb-4 font-sans">Great! Based on your preferences, here are the tracks we'll explore. You can remove any you don't need.</p>
+              
+              <div id="roadmap-tracks" class="space-y-3 mb-6"></div>
+              
+              <div class="mb-6 border border-border-col bg-bg p-4 flex flex-col gap-4">
+                 <div class="flex items-center justify-between">
+                   <div class="flex flex-col">
+                     <span class="text-xs font-bold font-mono tracking-widest text-text">AGENTIC SWIPING</span>
+                     <span class="text-[10px] text-text/50 font-mono mt-1">AI auto-swipes based on preferences</span>
+                   </div>
+                   <label class="relative inline-flex items-center cursor-pointer">
+                     <input type="checkbox" id="agentic-toggle" class="sr-only peer" checked>
+                     <div class="w-11 h-6 bg-card-bg border border-border-col peer-focus:outline-none rounded-none peer peer-checked:after:translate-x-full peer-checked:after:border-text after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text after:border-border-col after:border after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                   </label>
+                 </div>
+                 
+                 <div id="agent-budget-container" class="border-t border-border-col pt-4 mt-2">
+                   <div class="flex items-center justify-between mb-3">
+                     <span class="text-[10px] font-bold font-mono text-text/70 uppercase">AGENT BUDGET LIMIT</span>
+                     <span id="agent-budget-display" class="text-xs font-bold text-accent font-mono">₹10,000</span>
+                   </div>
+                   <input type="range" id="agent-budget-slider" min="0" max="45000" step="500" value="10000" class="w-full h-2 bg-card-bg appearance-none outline-none border border-border-col cursor-pointer mb-3">
+                   <p class="text-[10px] text-text/50 font-sans leading-tight">
+                     If the final cart total is within this budget, the agent will automatically complete the checkout. Otherwise, it will pause for your manual confirmation.
+                   </p>
+                 </div>
+              </div>
+              
+              <button id="btn-start-swiping" type="button" class="w-full bg-text text-bg py-3 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                <span>START SWIPING</span>
+                <i class="fa-solid fa-play text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Locked Input Box (Utilitarian layout) -->
-        <div class="max-w-2xl mx-auto mb-16">
+        <div class="max-w-2xl mx-auto mb-16" id="input-bar-container">
           <div class="flex flex-col sm:flex-row bg-card-bg border border-border-col p-1.5 gap-1">
             <input
               type="text"
@@ -254,64 +314,35 @@
       </div>
     </section>
 
-    <!-- ========== SCREEN 2: PREFERENCES & TRACKS ========== -->
-    <section id="screen-clarify" class="screen flex-col flex-1 px-6 py-12 md:py-20 justify-center items-center">
-      <div class="max-w-xl w-full">
-        <div class="text-center mb-8">
-          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// CUSTOMIZE YOUR EXPERIENCE //</span>
-          <h2 class="text-3xl font-bold mb-2 text-text">PREFERENCES & TRACKS</h2>
-          <p class="text-text/75 text-xs font-mono uppercase">Update your preferences and review the tracks to be explored.</p>
-        </div>
 
-        <!-- Preferences -->
-        <div id="clarify-questions" class="space-y-4 bg-card-bg p-6 border border-border-col transition-colors mb-6">
-          <!-- JS populated with Select Dropdowns (Opaque, sharp) -->
-        </div>
-
-        <!-- Roadmap Tracks -->
-        <div class="mb-8">
-          <div class="text-left mb-4">
-            <h3 class="text-lg font-bold text-text font-mono uppercase">YOUR TRACKS</h3>
-            <p class="text-[10px] text-text/60 font-mono uppercase">De-select any tracks you wish to exclude</p>
-          </div>
-          <div id="roadmap-tracks" class="space-y-3">
-            <!-- JS populated: List of tracks/categories with delete buttons -->
-          </div>
-        </div>
-
-        <!-- Start Button -->
-        <button
-          id="btn-start-swiping"
-          type="button"
-          class="w-full bg-accent text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col hover:bg-accent/90"
-        >
-          <span>START SWIPING</span>
-          <i class="fa-solid fa-play text-[10px]"></i>
-        </button>
-      </div>
-    </section>
 
     <!-- ========== SCREEN 4: SWIPE (Sharp structures) ========== -->
-    <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-6">
-      <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
+    <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-2 sm:px-6">
+      <div class="w-full max-w-[1600px] mx-auto flex flex-col lg:flex-row gap-4 xl:gap-8 items-start justify-between">
         
         <!-- Left: Mini Cart (lg screens) -->
-        <div class="w-full lg:w-[320px] shrink-0 bg-card-bg border border-border-col p-6 hidden lg:flex flex-col h-[700px] sticky top-24">
+        <div class="w-full lg:w-[360px] xl:w-[420px] shrink-0 bg-card-bg border border-border-col p-6 hidden lg:flex flex-col h-[700px] sticky top-24 z-20">
           <div class="flex items-center justify-between border-b border-border-col pb-4 mb-4">
-            <h4 class="font-bold text-sm text-text font-mono uppercase tracking-wider">CART SUMMARY</h4>
-            <span id="mini-cart-count" class="bg-bg text-accent text-[10px] font-mono px-2 py-1 border border-border-col">0 ITEMS</span>
+            <h4 class="font-bold text-2xl text-text font-mono uppercase tracking-wider">CART SUMMARY</h4>
+            <span id="mini-cart-count" class="bg-bg text-accent text-sm font-mono px-3 py-1.5 border border-border-col">0 ITEMS</span>
           </div>
           <div id="mini-cart-items" class="flex-1 overflow-y-auto no-scrollbar space-y-3">
-            <div class="text-center text-text/50 py-10 font-mono text-xs">Swipe right to add items</div>
+            <div class="text-center text-text/50 py-10 font-mono text-base">Swipe right to add items</div>
           </div>
-          <div class="border-t border-border-col pt-4 mt-4 flex items-center justify-between font-mono font-bold">
-            <span class="text-xs text-text/70">TOTAL</span>
-            <span id="mini-cart-total" class="text-accent text-lg">₹0</span>
+          <div class="border-t border-border-col pt-4 mt-4 flex flex-col gap-6 font-mono font-bold">
+            <div class="flex items-center justify-between">
+              <span class="text-base text-text/70">TOTAL</span>
+              <span id="mini-cart-total" class="text-accent text-4xl">₹0</span>
+            </div>
+            <button id="btn-swipe-done" type="button" class="w-full bg-accent text-bg py-6 font-bold text-lg tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-3 border border-border-col opacity-30 cursor-not-allowed" disabled>
+              <i class="fa-solid fa-lock text-base"></i>
+              <span>PROCEED TO PAYMENT</span>
+            </button>
           </div>
         </div>
 
-        <!-- Right: Swipe Area -->
-        <div class="flex-1 flex flex-col items-center w-full min-w-0">
+        <!-- Center: Swipe Area -->
+        <div class="flex flex-col items-center w-full min-w-0 max-w-[620px] mx-auto z-10">
           <!-- Category Tabs -->
           <div class="w-full max-w-2xl mb-8 text-center">
             <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// SWIPING... //</span>
@@ -332,7 +363,7 @@
             </div>
 
             <!-- Swipe & Done Controls Group -->
-            <div class="flex flex-col items-center gap-6 mt-8 w-full max-w-[460px] sm:max-w-[620px]">
+            <div class="flex flex-col items-center gap-6 mt-8 w-full max-w-[460px] sm:max-w-[620px]" id="manual-swipe-controls">
               <!-- Swipe Buttons -->
               <div class="flex justify-center items-center gap-8">
                 <button id="btn-swipe-left" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-rose-500 hover:bg-rose-950/20 hover:scale-105 active:scale-95 transition-all z-10">
@@ -349,14 +380,13 @@
                   <i class="fa-solid fa-forward-step"></i>
                   <span>SKIP TOPIC</span>
                 </button>
-                <button id="btn-swipe-done" type="button" class="w-full sm:w-auto bg-text text-bg px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
-                  <i class="fa-solid fa-lock"></i>
-                  <span>PROCEED TO PAYMENT</span>
-                </button>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Right: Dummy Spacer to force exact centering -->
+        <div class="hidden lg:block lg:w-[360px] xl:w-[420px] shrink-0"></div>
 
       </div>
     </section>
@@ -365,15 +395,50 @@
 
   </main>
 
-  <!-- ========== PROCEED CONFIRMATION POPUP ========== -->
-  <div id="proceed-popup" class="fixed inset-0 bg-bg/95 z-50 hidden flex-col items-center justify-center text-text px-6">
-    <div class="bg-card-bg border border-border-col p-8 max-w-md w-full animate-fade-up">
-      <h3 class="text-xl font-bold mb-2 font-mono tracking-widest text-text">CONFIRM PAYMENT</h3>
-      <p class="text-text/70 mb-6 font-mono text-sm">You have finalized items across all topics. Your total amount due is <span id="popup-total" class="font-bold text-accent">₹0</span>.</p>
-      <div class="flex gap-4 w-full">
-        <button id="btn-cancel-proceed" type="button" class="w-1/2 py-3 bg-card-bg border border-border-col hover:bg-bg text-text font-bold text-xs uppercase tracking-widest transition-all">CANCEL</button>
-        <button id="btn-confirm-proceed" type="button" class="w-1/2 py-3 bg-accent hover:opacity-95 text-bg font-bold text-xs uppercase tracking-widest transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-lock text-[10px]"></i> PROCEED</button>
+
+  <!-- ========== OVER BUDGET NOTIFICATION OVERLAY ========== -->
+  <div id="over-budget-overlay" class="fixed inset-0 bg-bg/95 z-50 hidden flex-col items-center justify-center text-text px-6">
+    <div class="max-w-md w-full bg-card-bg border border-border-col p-8 text-center animate-fade-up shadow-2xl relative">
+      <div class="absolute -top-[15px] left-1/2 -translate-x-1/2 bg-bg border border-border-col px-3 py-1 text-[10px] font-bold tracking-widest text-rose-500 uppercase font-mono">
+        ATTENTION REQUIRED
       </div>
+      <div class="w-16 h-16 bg-rose-500/10 border border-rose-500 text-rose-500 mx-auto flex items-center justify-center mb-6 mt-4">
+        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-3 font-mono tracking-widest text-text">BUDGET EXCEEDED</h3>
+      <p class="text-text/70 text-sm font-sans mb-8 leading-relaxed">
+        The final cart total (<span id="over-budget-total" class="font-bold text-text font-mono"></span>) exceeds your agent budget of <span id="over-budget-limit" class="font-bold text-text font-mono"></span>.
+        <br><br>
+        Please review your cart and proceed to payment manually.
+      </p>
+      <button id="btn-close-over-budget" type="button" class="w-full bg-accent text-bg py-4 font-bold text-xs tracking-widest uppercase hover:opacity-90 transition-all active:scale-[0.98]">
+        REVIEW CART & PAY
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== AUTONOMOUS PAYMENT COUNTDOWN OVERLAY ========== -->
+  <div id="autonomous-payment-overlay" class="fixed inset-0 bg-bg/95 z-50 hidden flex-col items-center justify-center text-text px-6">
+    <div class="max-w-md w-full bg-card-bg border border-border-col p-8 text-center animate-fade-up shadow-2xl relative">
+      <div class="absolute -top-[15px] left-1/2 -translate-x-1/2 bg-bg border border-border-col px-3 py-1 text-[10px] font-bold tracking-widest text-accent uppercase font-mono">
+        SYSTEM OVERRIDE
+      </div>
+      <div class="w-16 h-16 bg-accent/10 border border-accent text-accent mx-auto flex items-center justify-center mb-6 mt-4">
+        <i class="fa-solid fa-robot text-2xl"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-3 font-mono tracking-widest text-text">AUTONOMOUS PAYMENT</h3>
+      <p class="text-text/70 text-sm font-sans mb-8 leading-relaxed">
+        Budget limit satisfied. Executing transaction in <span id="auto-pay-countdown" class="font-bold text-accent font-mono text-lg">5</span>s.
+      </p>
+
+      <!-- Progress Bar -->
+      <div class="w-full h-1 bg-bg mb-8 relative overflow-hidden border border-border-col">
+        <div id="auto-pay-progress" class="absolute left-0 top-0 bottom-0 bg-accent w-full transition-transform ease-linear" style="transform: scaleX(1); transform-origin: left;"></div>
+      </div>
+
+      <button id="btn-cancel-autonomous" type="button" class="w-full bg-bg border border-border-col text-text/70 py-4 font-bold text-xs tracking-widest uppercase hover:text-rose-500 hover:border-rose-900 transition-all active:scale-[0.98]">
+        CANCEL AUTONOMOUS PAYMENT
+      </button>
     </div>
   </div>
 
@@ -409,27 +474,22 @@
       </div>
 
       <!-- Receipt properties -->
-      <div class="w-full space-y-2 text-[10px] font-['Space_Mono'] text-[#1a1c18]/85 z-10 relative my-6">
-        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+      <div class="w-full space-y-4 text-[24px] leading-tight font-['Space_Mono'] text-[#1a1c18]/85 z-10 relative my-6">
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-2">
           <span class="opacity-70">STATUS:</span><span class="font-bold text-emerald-700">PAYMENT AUTHORIZED</span>
         </div>
-        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-2">
           <span class="opacity-70">PAYMENT TYPE:</span><span class="font-bold">SECURE CHECKOUT</span>
         </div>
-        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-2">
           <span class="opacity-70">PROCESSING TIME:</span><span class="font-bold">1.8 SECONDS</span>
         </div>
-        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-2">
           <span class="opacity-70">TRANSACTION REF:</span><span class="font-bold">PRV-7840192-TX</span>
         </div>
       </div>
 
-      <!-- Barcode section -->
-      <div class="mt-6 pt-4 border-t border-dashed border-[#1a1c18]/30 flex flex-col items-center z-10 relative">
-        <span class="font-['Space_Mono'] text-[8px] tracking-[0.25em] text-[#1a1c18]/60 mb-2">SCAN ORDER BARCODE</span>
-        <span class="font-['Libre_Barcode_39'] text-5xl tracking-widest text-[#1a1c18]">*PRV-7840192-TX*</span>
-        <span class="font-['Space_Mono'] text-[9px] tracking-widest text-[#1a1c18] mt-1 font-bold">PRV-7840192-TX</span>
-      </div>
+
 
       <!-- Done Action Button (Brutalist style) -->
       <button id="btn-success-close" type="button" class="w-full bg-[#1a1c18] hover:bg-[#2e312b] text-[#ebe9de] py-3.5 font-bold text-xs tracking-widest uppercase transition-colors z-10 relative mt-8">

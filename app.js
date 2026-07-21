@@ -204,7 +204,6 @@ const MOCK_DATA = {
 // ─── DOM Elements ─── //
 const screens = {
   prompt:   document.getElementById('screen-prompt'),
-  clarify:  document.getElementById('screen-clarify'),
   swipe:    document.getElementById('screen-swipe'),
 };
 
@@ -215,6 +214,17 @@ const UI = {
   clarifyQuestions:   document.getElementById('clarify-questions'),
   roadmapTracks:      document.getElementById('roadmap-tracks'),
   btnStartSwiping:    document.getElementById('btn-start-swiping'),
+  
+  // Chat Flow Elements
+  chatFlowArea:       document.getElementById('chat-flow-area'),
+  preferencesBubble:  document.getElementById('preferences-bubble'),
+  tracksBubble:       document.getElementById('tracks-bubble'),
+  btnConfirmPrefs:    document.getElementById('btn-confirm-preferences'),
+  inputBarContainer:  document.getElementById('input-bar-container'),
+  agenticToggle:      document.getElementById('agentic-toggle'),
+  agentBudgetContainer:document.getElementById('agent-budget-container'),
+  agentBudgetSlider:  document.getElementById('agent-budget-slider'),
+  agentBudgetDisplay: document.getElementById('agent-budget-display'),
   categoryTabs:       document.getElementById('category-tabs'),
   cardStack:          document.getElementById('card-stack'),
   swipeTitle:         document.getElementById('swipe-title'),
@@ -224,6 +234,8 @@ const UI = {
   btnSkipTopic:       document.getElementById('btn-skip-topic'),
   cartIcon:           document.getElementById('cart-icon'),
   cartBadge:          document.getElementById('cart-badge'),
+  miniCartItems:      document.getElementById('mini-cart-items'),
+  manualSwipeControls: document.getElementById('manual-swipe-controls'),
   
   // Theme Switcher & Overlay Elements
   themeToggle:        document.getElementById('theme-toggle'),
@@ -233,6 +245,18 @@ const UI = {
   paymentStatusText:  document.getElementById('payment-status-text'),
   successPaidAmount:  document.getElementById('success-paid-amount'),
   btnSuccessClose:    document.getElementById('btn-success-close'),
+  
+  // Autonomous Payment Elements
+  autonomousPaymentOverlay: document.getElementById('autonomous-payment-overlay'),
+  autoPayCountdown:         document.getElementById('auto-pay-countdown'),
+  autoPayProgress:          document.getElementById('auto-pay-progress'),
+  btnCancelAutonomous:      document.getElementById('btn-cancel-autonomous'),
+
+  // Over Budget Elements
+  overBudgetOverlay:        document.getElementById('over-budget-overlay'),
+  overBudgetTotal:          document.getElementById('over-budget-total'),
+  overBudgetLimit:          document.getElementById('over-budget-limit'),
+  btnCloseOverBudget:       document.getElementById('btn-close-over-budget'),
 };
 
 // ─── App ─── //
@@ -266,6 +290,22 @@ const app = {
       const nameEl = document.getElementById('theme-profile-name');
       if (nameEl) nameEl.innerText = isEspresso ? 'ESPRESSO' : 'OLIVE';
     });
+    
+    if (UI.agenticToggle && UI.agentBudgetContainer) {
+      UI.agenticToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          UI.agentBudgetContainer.classList.remove('hidden');
+        } else {
+          UI.agentBudgetContainer.classList.add('hidden');
+        }
+      });
+    }
+
+    if (UI.agentBudgetSlider && UI.agentBudgetDisplay) {
+      UI.agentBudgetSlider.addEventListener('input', (e) => {
+        UI.agentBudgetDisplay.innerText = formatINR(parseInt(e.target.value, 10));
+      });
+    }
 
     // Category card clicks
     UI.categoryCards.forEach(card => {
@@ -281,13 +321,37 @@ const app = {
       this.submitCategory();
     });
 
-    // Start swiping from clarify screen
+    // Start swiping from tracks bubble
     UI.btnStartSwiping.addEventListener('click', (e) => {
       e.preventDefault();
       if (!UI.btnStartSwiping.hasAttribute('disabled')) {
         this.startSwiping();
       }
     });
+
+    if (UI.btnConfirmPrefs) {
+      UI.btnConfirmPrefs.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        // Generate roadmap tracks automatically alongside preferences
+        state.roadmapTracks = JSON.parse(JSON.stringify(MOCK_DATA[state.selectedCategory].categories));
+        this.renderRoadmapTracks();
+        
+        // Disable the confirm button
+        UI.btnConfirmPrefs.setAttribute('disabled', 'true');
+        UI.btnConfirmPrefs.classList.add('opacity-50', 'cursor-not-allowed');
+        UI.btnConfirmPrefs.innerText = 'PREFERENCES CONFIRMED';
+        
+        // Show tracks bubble
+        UI.tracksBubble.classList.remove('hidden');
+        UI.tracksBubble.classList.add('flex');
+        
+        // Scroll down
+        setTimeout(() => {
+          UI.tracksBubble.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      });
+    }
 
     UI.btnSwipeLeft.addEventListener('click', (e) => {
       e.preventDefault();
@@ -307,42 +371,58 @@ const app = {
       this.renderCards();
     });
 
-    // Done Swiping button click -> shows Proceed Popup
+    // Done Swiping button click -> proceeds to checkout directly
     UI.btnSwipeDone.addEventListener('click', (e) => {
       e.preventDefault();
-      this.showProceedPopup();
+      this.handleCheckout();
     });
 
     UI.cartIcon.addEventListener('click', (e) => {
       e.preventDefault();
       const btn = document.getElementById('btn-swipe-done');
       if (btn && !btn.hasAttribute('disabled')) {
-        this.showProceedPopup();
+        this.handleCheckout();
       }
     });
 
-    const btnCancelProceed = document.getElementById('btn-cancel-proceed');
-    if (btnCancelProceed) {
-      btnCancelProceed.addEventListener('click', (e) => {
-        e.preventDefault();
-        const popup = document.getElementById('proceed-popup');
-        if (popup) {
-          popup.classList.add('hidden');
-          popup.classList.remove('flex');
+    if (UI.miniCartItems) {
+      UI.miniCartItems.addEventListener('click', (e) => {
+        const btnMinus = e.target.closest('.cart-btn-minus');
+        const btnPlus = e.target.closest('.cart-btn-plus');
+        const btnRemove = e.target.closest('.cart-btn-remove');
+        
+        if (btnMinus) {
+          e.preventDefault();
+          if (btnMinus.hasAttribute('disabled')) return;
+          const id = btnMinus.dataset.id;
+          const itemIndex = state.cart.findIndex(c => c.id === id);
+          if (itemIndex > -1) {
+            if (state.cart[itemIndex].quantity > 1) {
+              state.cart[itemIndex].quantity--;
+              this.updateCartBadge();
+            }
+          }
         }
-      });
-    }
+        
+        if (btnPlus) {
+          e.preventDefault();
+          const id = btnPlus.dataset.id;
+          const item = state.cart.find(c => c.id === id);
+          if (item) {
+            item.quantity++;
+            this.updateCartBadge();
+          }
+        }
 
-    const btnConfirmProceed = document.getElementById('btn-confirm-proceed');
-    if (btnConfirmProceed) {
-      btnConfirmProceed.addEventListener('click', (e) => {
-        e.preventDefault();
-        const popup = document.getElementById('proceed-popup');
-        if (popup) {
-          popup.classList.add('hidden');
-          popup.classList.remove('flex');
+        if (btnRemove) {
+          e.preventDefault();
+          const id = btnRemove.dataset.id;
+          const itemIndex = state.cart.findIndex(c => c.id === id);
+          if (itemIndex > -1) {
+            state.cart.splice(itemIndex, 1);
+            this.updateCartBadge();
+          }
         }
-        this.handleCheckout();
       });
     }
 
@@ -352,6 +432,28 @@ const app = {
       UI.paymentOverlay.classList.remove('flex');
       this.resetToHome();
     });
+
+    if (UI.btnCancelAutonomous) {
+      UI.btnCancelAutonomous.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearInterval(state.autonomousInterval);
+        clearTimeout(state.autonomousTimeout);
+        UI.autonomousPaymentOverlay.classList.add('hidden');
+        UI.autonomousPaymentOverlay.classList.remove('flex');
+        
+        if (UI.swipeTitle) {
+          UI.swipeTitle.innerText = 'AUTONOMOUS PAYMENT CANCELLED.';
+        }
+      });
+    }
+
+    if (UI.btnCloseOverBudget) {
+      UI.btnCloseOverBudget.addEventListener('click', (e) => {
+        e.preventDefault();
+        UI.overBudgetOverlay.classList.add('hidden');
+        UI.overBudgetOverlay.classList.remove('flex');
+      });
+    }
 
     // Keyboard shortcuts on swipe screen
     document.addEventListener('keydown', (e) => {
@@ -400,18 +502,40 @@ const app = {
     // Enable next button
     if (UI.btnSubmitPrompt) {
       UI.btnSubmitPrompt.removeAttribute('disabled');
+      UI.btnSubmitPrompt.classList.remove('opacity-30', 'cursor-not-allowed');
     }
   },
 
   submitCategory() {
     if (!state.selectedCategory) return;
+    
+    // Hide category cards to reduce clutter
+    const categoryCardsContainer = document.getElementById('category-cards');
+    if (categoryCardsContainer) categoryCardsContainer.classList.add('hidden');
+    
+    // Show chat area
+    if (UI.chatFlowArea) {
+      UI.chatFlowArea.classList.remove('hidden');
+      UI.chatFlowArea.classList.add('flex');
+    }
+    
+    // Render and show preferences bubble
     this.renderPrefilled(MOCK_DATA[state.selectedCategory].prefilled);
+    if (UI.preferencesBubble) {
+      UI.preferencesBubble.classList.remove('hidden');
+      UI.preferencesBubble.classList.add('flex');
+    }
     
-    // Generate roadmap tracks automatically alongside preferences
-    state.roadmapTracks = JSON.parse(JSON.stringify(MOCK_DATA[state.selectedCategory].categories));
-    this.renderRoadmapTracks();
+    // Disable submit button
+    if (UI.btnSubmitPrompt) {
+      UI.btnSubmitPrompt.setAttribute('disabled', 'true');
+      UI.btnSubmitPrompt.classList.add('opacity-30', 'cursor-not-allowed');
+    }
     
-    this.showScreen('clarify');
+    // Scroll to the chat area
+    setTimeout(() => {
+      UI.chatFlowArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   },
 
   // ─── Screen 2: Prefilled Clarification ─── //
@@ -495,11 +619,126 @@ const app = {
     state.categories = JSON.parse(JSON.stringify(state.roadmapTracks));
     state.currentCategoryIndex = 0;
     state.currentCardIndex = 0;
+    
+    if (UI.agenticToggle) {
+      state.isAgenticSwiping = UI.agenticToggle.checked;
+    } else {
+      state.isAgenticSwiping = true;
+    }
+
+    if (UI.agentBudgetSlider) {
+      state.agentBudget = parseInt(UI.agentBudgetSlider.value, 10);
+    } else {
+      state.agentBudget = Infinity;
+    }
+
+    if (UI.manualSwipeControls) {
+      if (state.isAgenticSwiping) {
+        UI.manualSwipeControls.classList.add('hidden');
+        UI.manualSwipeControls.classList.remove('flex');
+      } else {
+        UI.manualSwipeControls.classList.remove('hidden');
+        UI.manualSwipeControls.classList.add('flex');
+      }
+    }
+
     this.renderTabs();
     this.renderCards();
     this.updateMiniCart();
     this.updateProceedButton();
     this.showScreen('swipe');
+    
+    if (state.isAgenticSwiping) {
+      setTimeout(() => this.runAgenticSwiping(), 800);
+    }
+  },
+
+  runAgenticSwiping() {
+    if (!state.isAgenticSwiping || state.currentScreen !== 'swipe') return;
+
+    const cat = state.categories[state.currentCategoryIndex];
+    if (!cat) {
+      // All categories done
+      this.checkAgenticCheckout();
+      return;
+    }
+
+    const items = cat.items;
+    
+    // If all cards in this category are swiped
+    if (state.currentCardIndex >= items.length) {
+      state.currentCategoryIndex++;
+      state.currentCardIndex = 0;
+      this.renderTabs();
+      this.renderCards();
+      setTimeout(() => this.runAgenticSwiping(), 800);
+      return;
+    }
+
+    // Determine direction based on preference (mock: keep first item, skip rest)
+    const dir = (state.currentCardIndex === 0) ? 'right' : 'left';
+    
+    this.swipe(dir);
+    
+    // Wait for card animation, then swipe next
+    setTimeout(() => this.runAgenticSwiping(), 600);
+  },
+
+  checkAgenticCheckout() {
+    let subtotal = 0;
+    state.cart.forEach(c => subtotal += c.price * c.quantity);
+    const tax = Math.round(subtotal * 0.18);
+    const grandTotal = subtotal + tax;
+
+    if (grandTotal <= state.agentBudget) {
+      // Direct payment since it is within budget
+      this.triggerAutonomousPaymentCountdown();
+    } else {
+      // Manual payment required
+      if (UI.swipeTitle) {
+        UI.swipeTitle.innerText = 'OVER BUDGET. PLEASE PAY MANUALLY.';
+      }
+      
+      if (UI.overBudgetOverlay && UI.overBudgetTotal && UI.overBudgetLimit) {
+        UI.overBudgetTotal.innerText = formatINR(grandTotal);
+        UI.overBudgetLimit.innerText = formatINR(state.agentBudget);
+        UI.overBudgetOverlay.classList.remove('hidden');
+        UI.overBudgetOverlay.classList.add('flex');
+      }
+    }
+  },
+
+  triggerAutonomousPaymentCountdown() {
+    if (!UI.autonomousPaymentOverlay) return;
+
+    UI.autonomousPaymentOverlay.classList.remove('hidden');
+    UI.autonomousPaymentOverlay.classList.add('flex');
+    
+    let secondsLeft = 5;
+    UI.autoPayCountdown.innerText = secondsLeft;
+    
+    UI.autoPayProgress.style.transitionDuration = '0s';
+    UI.autoPayProgress.style.transform = 'scaleX(1)';
+    
+    // Force reflow
+    void UI.autoPayProgress.offsetWidth;
+    
+    UI.autoPayProgress.style.transitionDuration = '5s';
+    UI.autoPayProgress.style.transform = 'scaleX(0)';
+
+    state.autonomousInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft >= 0) {
+        UI.autoPayCountdown.innerText = secondsLeft;
+      }
+    }, 1000);
+
+    state.autonomousTimeout = setTimeout(() => {
+      clearInterval(state.autonomousInterval);
+      UI.autonomousPaymentOverlay.classList.add('hidden');
+      UI.autonomousPaymentOverlay.classList.remove('flex');
+      this.handleCheckout();
+    }, 5000);
   },
 
   // ─── Screen 4: Swipe ─── //
@@ -537,12 +776,6 @@ const app = {
 
     const category = state.categories[state.currentCategoryIndex];
     if (!category) {
-      setTimeout(() => {
-        const btn = document.getElementById('btn-swipe-done');
-        if (btn && !btn.hasAttribute('disabled')) {
-          this.showProceedPopup();
-        }
-      }, 400);
       return;
     }
 
@@ -762,21 +995,30 @@ const app = {
     let count = 0;
 
     if (state.cart.length === 0) {
-      itemsContainer.innerHTML = '<div class="text-center text-text/50 py-10 font-mono text-xs">Swipe right to add items</div>';
+      itemsContainer.innerHTML = '<div class="text-center text-text/50 py-10 font-mono text-base">Swipe right to add items</div>';
     } else {
       state.cart.forEach(item => {
         total += item.price * item.quantity;
         count += item.quantity;
         
         const row = document.createElement('div');
-        row.className = 'flex items-center gap-3 bg-bg border border-border-col p-2 animate-fade-up';
+        row.className = 'flex items-center gap-4 bg-bg border border-border-col p-4 animate-fade-up';
         row.innerHTML = `
-          <div class="w-8 h-8 bg-card-bg border border-border-col flex items-center justify-center shrink-0 text-lg">${item.image}</div>
+          <div class="w-14 h-14 bg-card-bg border border-border-col flex items-center justify-center shrink-0 text-3xl">${item.image}</div>
           <div class="flex-1 min-w-0">
-            <h5 class="text-[10px] font-bold text-text truncate uppercase font-['Oswald'] tracking-wide">${item.name}</h5>
-            <div class="flex justify-between mt-0.5">
-              <span class="text-[9px] text-text/60 font-mono">x${item.quantity}</span>
-              <span class="text-[10px] text-accent font-bold font-mono">${formatINR(item.price * item.quantity)}</span>
+            <h5 class="text-sm font-bold text-text truncate uppercase font-['Oswald'] tracking-wide">${item.name}</h5>
+            <div class="flex justify-between items-center mt-1">
+              <div class="flex items-center gap-3 bg-card-bg border border-border-col">
+                <button type="button" class="cart-btn-minus px-2 py-0.5 hover:bg-bg hover:text-accent transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed" data-id="${item.id}" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
+                <span class="text-xs font-mono font-bold w-4 text-center">${item.quantity}</span>
+                <button type="button" class="cart-btn-plus px-2 py-0.5 hover:bg-bg hover:text-accent transition-colors cursor-pointer" data-id="${item.id}">+</button>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-accent font-bold font-mono">${formatINR(item.price * item.quantity)}</span>
+                <button type="button" class="cart-btn-remove text-text/50 hover:text-rose-500 transition-colors" data-id="${item.id}" title="Remove Item">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
             </div>
           </div>
         `;
@@ -812,24 +1054,6 @@ const app = {
     }
   },
 
-  // ─── Payment Popup logic ─── //
-  showProceedPopup() {
-    let total = 0;
-    state.cart.forEach(item => {
-      total += item.price * item.quantity;
-    });
-    
-    const popupTotal = document.getElementById('popup-total');
-    if (popupTotal) {
-      popupTotal.innerText = formatINR(total);
-    }
-    
-    const popup = document.getElementById('proceed-popup');
-    if (popup) {
-      popup.classList.remove('hidden');
-      popup.classList.add('flex');
-    }
-  },
 
   handleCheckout() {
     if (state.cart.length === 0) return;
@@ -875,6 +1099,8 @@ const app = {
     state.selectedCategory = null;
     state.currentCategoryIndex = 0;
     state.currentCardIndex = 0;
+    state.isAgenticSwiping = false; // Disable any running agentic loop
+    state.agentBudget = 0;
     this.updateCartBadge();
 
     UI.categoryCards.forEach(c => {
@@ -888,6 +1114,27 @@ const app = {
     if (UI.btnSubmitPrompt) {
       UI.btnSubmitPrompt.setAttribute('disabled', 'true');
     }
+    
+    // Reset Chat Flow
+    if (UI.chatFlowArea) {
+      UI.chatFlowArea.classList.add('hidden');
+      UI.chatFlowArea.classList.remove('flex');
+    }
+    if (UI.preferencesBubble) {
+      UI.preferencesBubble.classList.add('hidden');
+      UI.preferencesBubble.classList.remove('flex');
+    }
+    if (UI.tracksBubble) {
+      UI.tracksBubble.classList.add('hidden');
+      UI.tracksBubble.classList.remove('flex');
+    }
+    if (UI.btnConfirmPrefs) {
+      UI.btnConfirmPrefs.removeAttribute('disabled');
+      UI.btnConfirmPrefs.classList.remove('opacity-50', 'cursor-not-allowed');
+      UI.btnConfirmPrefs.innerText = 'CONFIRM PREFERENCES';
+    }
+    const categoryCardsContainer = document.getElementById('category-cards');
+    if (categoryCardsContainer) categoryCardsContainer.classList.remove('hidden');
     
     this.updateMiniCart();
     this.updateProceedButton();
