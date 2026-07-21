@@ -207,7 +207,6 @@ const screens = {
   clarify:  document.getElementById('screen-clarify'),
   roadmap:  document.getElementById('screen-roadmap'),
   swipe:    document.getElementById('screen-swipe'),
-  checkout: document.getElementById('screen-checkout'),
 };
 
 const UI = {
@@ -225,12 +224,8 @@ const UI = {
   btnSwipeRight:      document.getElementById('btn-swipe-right'),
   btnSwipeDone:       document.getElementById('btn-swipe-done'),
   btnSkipTopic:       document.getElementById('btn-skip-topic'),
-  btnBackToSwipe:     document.getElementById('btn-back-to-swipe'),
   cartIcon:           document.getElementById('cart-icon'),
   cartBadge:          document.getElementById('cart-badge'),
-  cartItems:          document.getElementById('cart-items'),
-  cartTotal:          document.getElementById('cart-total'),
-  btnCheckout:        document.getElementById('btn-checkout'),
   
   // Theme Switcher & Overlay Elements
   themeToggle:        document.getElementById('theme-toggle'),
@@ -372,13 +367,17 @@ const app = {
 
   showScreen(id) {
     Object.values(screens).forEach(s => {
-      s.classList.remove('active');
-      s.style.display = 'none';
+      if (s) {
+        s.classList.remove('active');
+        s.style.display = 'none';
+      }
     });
-    screens[id].style.display = 'flex';
-    requestAnimationFrame(() => {
-      screens[id].classList.add('active');
-    });
+    
+    const target = screens[id];
+    if (target) {
+      target.style.display = 'flex';
+      setTimeout(() => target.classList.add('active'), 50);
+    }
     state.currentScreen = id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   },
