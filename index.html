@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QUIKSWIPE — BATCH MANIFEST</title>
+  <meta name="description" content="Utilitarian batch planner & swipe card cart.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg': 'var(--color-bg)',
+            'text': 'var(--color-text)',
+            'accent': 'var(--color-accent)',
+            'accent-orange': 'var(--color-accent-orange)',
+            'border-col': 'var(--color-border)',
+            'card-bg': 'var(--color-card-bg)',
+          },
+        },
+      },
+    }
+  </script>
+  
+  <!-- Retro-Tech / Monospace Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Barcode+39&family=Oswald:wght@500;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <style>
+    :root {
+      /* Theme 1: Charcoal Olive Profile */
+      --color-bg: #1A1C18;
+      --color-text: #EBE9DE;
+      --color-accent: #DDC655;
+      --color-accent-orange: #FF6B35;
+      --color-border: #3B3F37;
+      --color-card-bg: #222520;
+    }
+
+    html.espresso-theme {
+      /* Theme 2: Deep Espresso Orange Profile */
+      --color-bg: #18110F;
+      --color-text: #EBE9DE;
+      --color-accent: #FF5722;
+      --color-accent-orange: #FF5722;
+      --color-border: #3C2C26;
+      --color-card-bg: #211816;
+    }
+
+    body {
+      background-color: var(--color-bg) !important;
+      color: var(--color-text) !important;
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* Utilitarian Headers, Labels and Buttons */
+    h1, h2, h3, h4, .heading-brutalist {
+      font-family: 'Oswald', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .label-mono, label, select, input, button {
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Screen Management */
+    .screen { display: none; opacity: 0; transition: opacity 0.3s ease; }
+    .screen.active { display: flex; opacity: 1; }
+
+    /* Swipe Cards (Bigger by 75%) */
+    .swipe-card {
+      position: absolute; inset: 0;
+      transition: transform 0.35s cubic-bezier(.4,.0,.2,1), opacity 0.35s ease;
+      transform-origin: 50% 100%;
+      will-change: transform, opacity;
+      cursor: grab;
+    }
+    .swipe-card:active { cursor: grabbing; }
+    .swipe-left  { transform: translateX(-140%) rotate(-20deg) !important; opacity: 0 !important; }
+    .swipe-right { transform: translateX(140%) rotate(20deg) !important;  opacity: 0 !important; }
+
+    /* Swipe feedback overlays - Brutalist labels */
+    .swipe-card .like-overlay,
+    .swipe-card .nope-overlay {
+      position: absolute; top: 32px; z-index: 50;
+      padding: 8px 20px; font-weight: 700;
+      font-size: 2rem;
+      opacity: 0; transition: opacity 0.15s ease;
+      pointer-events: none;
+      background-color: var(--color-bg);
+      border: 3px solid var(--color-text);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.1em;
+    }
+    .swipe-card .like-overlay { right: 32px; border-color: #10b981; color: #10b981; transform: rotate(8deg); }
+    .swipe-card .nope-overlay { left: 32px; border-color: #ef4444; color: #ef4444; transform: rotate(-8deg); }
+
+    /* Scrollbar hide */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Dark Mode Filter for Leaflet Map Tiles */
+    #checkout-map .leaflet-tile-container {
+      filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(90%);
+    }
+    #checkout-map .leaflet-control-zoom a {
+      background-color: var(--color-card-bg) !important;
+      color: var(--color-text) !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 0 !important;
+    }
+
+    /* Jagged Edge Receipt Effect (Solid white receipt label) */
+    .receipt-card {
+      background-color: #EBE9DE;
+      color: #1A1C18;
+      border: 1px solid #3B3F37;
+      position: relative;
+    }
+    .receipt-card::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 10px;
+      background-image: linear-gradient(135deg, transparent 50%, #EBE9DE 50%), linear-gradient(225deg, transparent 50%, #EBE9DE 50%);
+      background-size: 10px 10px;
+      background-position: bottom left;
+      background-repeat: repeat-x;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col selection:bg-accent selection:text-bg overflow-x-hidden">
+
+  <!-- Header (Solid opaque utilitarian status header) -->
+  <header class="w-full px-6 md:px-10 py-4 flex items-center justify-between z-30 border-b border-border-col bg-card-bg sticky top-0 transition-colors">
+    <div class="flex items-center gap-3 cursor-pointer group" onclick="app.resetToHome()">
+      <div class="w-9 h-9 bg-accent flex items-center justify-center text-bg font-bold text-lg border border-border-col">
+        Q
+      </div>
+      <h1 class="text-xl font-bold tracking-wider text-text">QUIKSWIPE // <span class="text-accent">BATCH</span></h1>
+    </div>
+    
+    <!-- Controls (Theme Profile Switcher + Cart Badge) -->
+    <div class="flex items-center gap-4">
+      <!-- Utilitarian Theme Profile switcher -->
+      <button id="theme-toggle" type="button" class="bg-bg hover:bg-card-bg border border-border-col px-3 py-1.5 text-text font-['Space_Mono'] text-[10px] sm:text-xs tracking-wider uppercase transition-colors" title="Toggle Theme Profile">
+        <span class="hidden sm:inline opacity-70">PROFILE: </span>
+        <span id="theme-profile-name" class="font-bold text-accent">OLIVE</span>
+      </button>
+
+      <div class="relative cursor-pointer bg-card-bg hover:bg-bg border border-border-col p-2.5 transition-all text-text shadow-sm" id="cart-icon">
+        <i class="fa-solid fa-folder-closed text-base"></i>
+        <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-accent-orange text-[10px] text-bg flex items-center justify-center font-bold border border-border-col hidden">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 w-full relative flex flex-col">
+
+    <!-- ========== SCREEN 1: CATEGORY SELECT ========== -->
+    <section id="screen-prompt" class="screen active flex-col flex-1 px-6 justify-center items-center py-16 md:py-24">
+      <div class="max-w-5xl w-full">
+        <!-- Title reading "ROAST BATCH MANIFEST" -->
+        <div class="mb-12 text-center">
+          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-3 block">// QUIKSWIPE SYSTEM GENERATION //</span>
+          <h2 class="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-text mb-6">
+            ROAST BATCH MANIFEST
+          </h2>
+          <p class="text-text/75 text-sm sm:text-base max-w-xl mx-auto font-sans leading-relaxed">
+            Select a target pipeline configuration below to automatically prefill standard manifest inputs.
+          </p>
+        </div>
+
+        <!-- Locked Input Box (Utilitarian layout) -->
+        <div class="max-w-2xl mx-auto mb-16">
+          <div class="flex flex-col sm:flex-row bg-card-bg border border-border-col p-1.5 gap-1">
+            <input
+              type="text"
+              id="main-prompt"
+              readonly
+              placeholder="SELECT PIPELINE BATCH CONFIGURATION..."
+              class="w-full bg-transparent text-text px-4 py-3 outline-none placeholder:text-text/30 text-sm font-['Space_Mono'] uppercase cursor-not-allowed"
+              autocomplete="off"
+            >
+            <button
+              id="btn-submit-prompt"
+              type="button"
+              disabled
+              class="bg-accent text-bg px-8 py-3.5 transition-all font-bold text-xs tracking-widest uppercase hover:bg-accent/90 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span>LOG ROAST</span>
+              <i class="fa-solid fa-arrow-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Category Cards (Neo-brutalist grids) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-5xl mx-auto" id="category-cards">
+
+          <button data-category="cooking" type="button" class="category-card group bg-card-bg border border-border-col p-6 text-left transition-all duration-200 hover:bg-accent hover:text-bg flex flex-col justify-between min-h-[140px]">
+            <div class="text-3xl mb-4 group-hover:scale-105 transition-transform duration-300">🍳</div>
+            <div>
+              <span class="label-mono text-[9px] block opacity-50 mb-1">PIPELINE.01</span>
+              <h3 class="text-sm font-bold tracking-wider leading-tight text-current">RECIPE COMMERCE</h3>
+            </div>
+          </button>
+
+          <button data-category="party" type="button" class="category-card group bg-card-bg border border-border-col p-6 text-left transition-all duration-200 hover:bg-accent hover:text-bg flex flex-col justify-between min-h-[140px]">
+            <div class="text-3xl mb-4 group-hover:scale-105 transition-transform duration-300">🎉</div>
+            <div>
+              <span class="label-mono text-[9px] block opacity-50 mb-1">PIPELINE.02</span>
+              <h3 class="text-sm font-bold tracking-wider leading-tight text-current">EVENT PLANNING</h3>
+            </div>
+          </button>
+
+          <button data-category="travel" type="button" class="category-card group bg-card-bg border border-border-col p-6 text-left transition-all duration-200 hover:bg-accent hover:text-bg flex flex-col justify-between min-h-[140px]">
+            <div class="text-3xl mb-4 group-hover:scale-105 transition-transform duration-300">✈️</div>
+            <div>
+              <span class="label-mono text-[9px] block opacity-50 mb-1">PIPELINE.03</span>
+              <h3 class="text-sm font-bold tracking-wider leading-tight text-current">TRIP PLANNING</h3>
+            </div>
+          </button>
+
+          <button data-category="dorm" type="button" class="category-card group bg-card-bg border border-border-col p-6 text-left transition-all duration-200 hover:bg-accent hover:text-bg flex flex-col justify-between min-h-[140px]">
+            <div class="text-3xl mb-4 group-hover:scale-105 transition-transform duration-300">📦</div>
+            <div>
+              <span class="label-mono text-[9px] block opacity-50 mb-1">PIPELINE.04</span>
+              <h3 class="text-sm font-bold tracking-wider leading-tight text-current">DORM SETUP</h3>
+            </div>
+          </button>
+
+          <button data-category="shopping" type="button" class="category-card group bg-card-bg border border-border-col p-6 text-left transition-all duration-200 hover:bg-accent hover:text-bg flex flex-col justify-between min-h-[140px]">
+            <div class="text-3xl mb-4 group-hover:scale-105 transition-transform duration-300">👟</div>
+            <div>
+              <span class="label-mono text-[9px] block opacity-50 mb-1">PIPELINE.05</span>
+              <h3 class="text-sm font-bold tracking-wider leading-tight text-current">GENERAL SHOPPING</h3>
+            </div>
+          </button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 2: CLARIFICATION (Dropdowns) ========== -->
+    <section id="screen-clarify" class="screen flex-col flex-1 px-6 py-12 md:py-20 justify-center items-center">
+      <div class="max-w-lg w-full">
+        <div class="text-center mb-8">
+          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// METADATA CLARIFICATION //</span>
+          <h2 class="text-3xl font-bold mb-2 text-text">BATCH ARGUMENTS</h2>
+          <p class="text-text/75 text-xs font-mono uppercase">Update the manifest properties below to optimize curation routing.</p>
+        </div>
+
+        <div id="clarify-questions" class="space-y-4 bg-card-bg p-6 border border-border-col transition-colors">
+          <!-- JS populated with Select Dropdowns (Opaque, sharp) -->
+        </div>
+
+        <button
+          id="btn-generate-roadmap"
+          type="button"
+          class="mt-6 w-full bg-accent hover:bg-accent/90 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
+        >
+          <i class="fa-solid fa-microchip text-xs"></i>
+          GENERATE ROUTED ROADMAP
+        </button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 3: ROADMAP PREVIEW ========== -->
+    <section id="screen-roadmap" class="screen flex-col flex-1 px-6 py-10 md:py-16 justify-center items-center">
+      <div class="max-w-xl w-full">
+        <div class="text-center mb-8">
+          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// PIPELINE Customization //</span>
+          <h2 class="text-3xl font-bold mb-2 text-text">TRACK SELECTOR</h2>
+          <p class="text-text/70 text-xs font-mono uppercase">De-select entire manifest tracks before initiating options swipe.</p>
+        </div>
+
+        <div id="roadmap-tracks" class="space-y-3 mb-8">
+          <!-- JS populated: List of tracks/categories with delete buttons -->
+        </div>
+
+        <button
+          id="btn-start-swiping"
+          type="button"
+          class="w-full bg-accent text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
+        >
+          <span>INITIATE SWIPE INTERFACE</span>
+          <i class="fa-solid fa-play text-[10px]"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 4: SWIPE (Sharp structures) ========== -->
+    <section id="screen-swipe" class="screen flex-col flex-1 py-8 md:py-12 px-6 items-center justify-center">
+
+      <!-- Category Tabs -->
+      <div class="w-full max-w-2xl mb-8 text-center">
+        <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// SWIPING MANIFEST TRACK //</span>
+        <h3 class="text-2xl font-bold mb-4 text-text" id="swipe-title">LOADING...</h3>
+        <div class="flex flex-wrap justify-center gap-2" id="category-tabs"></div>
+      </div>
+
+      <!-- Swipe Area -->
+      <div class="w-full flex flex-col items-center flex-1">
+        <div class="relative w-full max-w-[460px] sm:max-w-[620px] h-[580px] sm:h-[700px]" id="card-stack">
+          <!-- Cards go here -->
+          <div class="absolute inset-0 flex items-center justify-center text-text/50 flex-col bg-card-bg border border-border-col">
+            <div class="w-14 h-14 bg-bg flex items-center justify-center mb-3 border border-border-col">
+              <i class="fa-solid fa-clipboard-check text-2xl text-accent"></i>
+            </div>
+            <p class="text-xs font-mono uppercase tracking-widest">Track parsing complete.</p>
+          </div>
+        </div>
+
+        <!-- Swipe & Done Controls Group -->
+        <div class="flex flex-col items-center gap-6 mt-8 w-full max-w-[460px] sm:max-w-[620px]">
+          <!-- Swipe Buttons -->
+          <div class="flex justify-center items-center gap-8">
+            <button id="btn-swipe-left" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-rose-500 hover:bg-rose-950/20 hover:scale-105 active:scale-95 transition-all z-10">
+              <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <button id="btn-swipe-right" type="button" class="w-16 h-16 bg-card-bg border border-border-col flex items-center justify-center text-emerald-500 hover:bg-emerald-950/20 hover:scale-105 active:scale-95 transition-all z-10">
+              <i class="fa-solid fa-check text-xl"></i>
+            </button>
+          </div>
+
+          <!-- Done Swiping Button -->
+          <button id="btn-swipe-done" type="button" class="w-full sm:w-auto bg-text text-bg px-8 py-3.5 font-bold text-xs tracking-widest uppercase hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 z-10 border border-border-col">
+            <i class="fa-solid fa-folder-open"></i>
+            <span>OPEN MANIFEST DIRECTORY</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 5: REVIEW & CHECKOUT (Opaque structures) ========== -->
+    <section id="screen-checkout" class="screen flex-col flex-1 px-6 py-10 md:py-16">
+      <div class="max-w-6xl mx-auto w-full">
+        <!-- Title Header -->
+        <div class="text-center mb-10">
+          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// FINAL BILL OF LADING //</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-text">MANIFEST REVIEW & DIRECTORY</h2>
+          <p class="text-text/70 text-xs font-mono uppercase mt-2">Adjust quantities, confirm delivery drop coordinates, and authorize settlement.</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+          <!-- Left Column: Items grouped by Category/Track -->
+          <div class="flex-1 min-w-0 w-full">
+            <div class="flex items-center justify-between mb-6 pb-2 border-b border-border-col">
+              <h3 class="text-lg font-bold text-text">MANIFESTED CARGO ITEMS</h3>
+              <span class="bg-card-bg text-accent text-xs font-mono border border-border-col px-3 py-1.5" id="cart-count-label">0 ITEMS</span>
+            </div>
+            
+            <div id="cart-items" class="space-y-6">
+              <!-- JS populated: Grouped by category track, with steppers and delete buttons -->
+            </div>
+
+            <!-- Back to Swipe early navigation link button -->
+            <div class="mt-8 pt-4 border-t border-border-col">
+              <button
+                id="btn-back-to-swipe"
+                type="button"
+                class="bg-card-bg hover:bg-bg border border-border-col text-text px-6 py-3 font-bold text-xs tracking-widest uppercase transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:shadow-sm"
+              >
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span>RETURN TO SWIPING MODE</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Sticky Delivery & Summary -->
+          <div class="w-full lg:w-[360px] shrink-0 lg:sticky lg:top-24 space-y-6">
+            
+            <!-- Delivery Location Card -->
+            <div class="bg-card-bg border border-border-col p-6">
+              <h3 class="text-base font-bold mb-3 text-text flex items-center gap-2">
+                <i class="fa-solid fa-map-location-dot text-accent"></i>
+                <span>DROP COORDINATES</span>
+              </h3>
+              <p class="text-[10px] font-mono text-text/60 mb-4 uppercase">Set the final manifest delivery drop address on map grid.</p>
+              
+              <!-- Map Container -->
+              <div id="checkout-map" class="h-44 w-full border border-border-col bg-bg mb-4"></div>
+              
+              <!-- Address Output -->
+              <div class="flex items-start gap-3 bg-bg border border-border-col p-4 text-[11px] text-text">
+                <i class="fa-solid fa-location-dot text-accent-orange mt-0.5 text-xs shrink-0"></i>
+                <div class="min-w-0 font-mono">
+                  <span class="font-bold block mb-1 uppercase tracking-wider text-accent">DROP ADDRESS</span>
+                  <span id="selected-address-text" class="text-text/80 leading-relaxed block break-words uppercase">LOCATING BANGALORE GRID...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="bg-card-bg border border-border-col p-6 sm:p-8">
+              <h3 class="text-base font-bold mb-5 text-text">MANIFEST SETTLEMENT</h3>
+              <div class="space-y-3 mb-5 text-text/70 text-xs font-mono border-b border-border-col pb-5">
+                <div class="flex justify-between"><span>SUBTOTAL</span><span class="text-text font-bold" id="summary-subtotal">₹0</span></div>
+                <div class="flex justify-between"><span>TAX / GST (18%)</span><span class="text-text font-bold" id="summary-tax">₹0</span></div>
+              </div>
+              <div class="flex justify-between items-center mb-6">
+                <span class="text-text text-sm font-mono">TOTAL SETTLEMENT</span>
+                <span class="text-2xl font-bold text-accent" id="cart-total">₹0</span>
+              </div>
+              <button
+                id="btn-checkout"
+                type="button"
+                class="w-full bg-accent hover:opacity-95 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
+              >
+                <i class="fa-solid fa-lock text-xs"></i>
+                AUTHORIZE SIGNATURE VIA PRAVA
+              </button>
+              <p class="text-center text-[9px] font-mono text-text/40 mt-4"><i class="fa-solid fa-shield-halved mr-1"></i> SECURE AUTONOMOUS CONTRACT SETTLEMENT</p>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========== PAYMENT SUCCESS DIALOG OVERLAY ========== -->
+  <div id="payment-overlay" class="fixed inset-0 bg-bg/98 z-50 hidden flex-col items-center justify-center text-text px-6">
+    <!-- Loader Section -->
+    <div id="payment-loader" class="flex flex-col items-center justify-center max-w-md text-center">
+      <div class="w-16 h-16 border-2 border-t-accent border-text/20 animate-spin mb-6"></div>
+      <h3 class="text-xl font-bold mb-2 font-mono tracking-widest">TRANSACTION HANDSHAKE...</h3>
+      <p class="text-text/60 text-xs font-mono uppercase" id="payment-status-text">INITIALIZING SECURE PRAVA SETTLEMENT PARSING...</p>
+    </div>
+
+    <!-- Success Card Section (Jagged receipt look with barcode) -->
+    <div id="payment-success-card" class="hidden flex-col max-w-md w-full p-8 receipt-card relative shadow-2xl animate-fade-up">
+      <!-- Raining Confetti Container -->
+      <div id="confetti-container" class="absolute inset-0 pointer-events-none z-0"></div>
+
+      <!-- Header Label / Stamp -->
+      <div class="border-b-2 border-dashed border-[#1a1c18]/30 pb-4 mb-5 flex justify-between items-center z-10 relative">
+        <div class="text-left">
+          <span class="font-['Space_Mono'] text-[9px] font-bold block opacity-60 tracking-wider">SYSTEM RECEIPT</span>
+          <h4 class="font-['Oswald'] text-lg font-bold text-[#1a1c18] tracking-wider">SETTLEMENT CLEARANCE</h4>
+        </div>
+        <div class="w-12 h-12 bg-emerald-500/10 border-2 border-emerald-600 rounded-full flex items-center justify-center text-emerald-600 text-lg">
+          <i class="fa-solid fa-check"></i>
+        </div>
+      </div>
+
+      <!-- Paid Amount -->
+      <div class="text-center my-4 z-10 relative">
+        <span class="font-['Space_Mono'] text-[10px] tracking-widest text-[#1a1c18]/60 uppercase block mb-1">TOTAL AMOUNT SETTLED</span>
+        <h3 class="font-['Oswald'] text-4xl font-bold text-[#1a1c18]" id="success-paid-amount">₹0</h3>
+      </div>
+
+      <!-- Receipt properties -->
+      <div class="w-full space-y-2 text-[10px] font-['Space_Mono'] text-[#1a1c18]/85 z-10 relative my-6">
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+          <span class="opacity-70">STATUS:</span><span class="font-bold text-emerald-700">MANIFEST AUTHORIZED</span>
+        </div>
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+          <span class="opacity-70">PAYMENT TYPE:</span><span class="font-bold">PRAVA AUTONOMOUS CONTRACT</span>
+        </div>
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+          <span class="opacity-70">HANDSHAKE SPEED:</span><span class="font-bold">1.8 SECONDS</span>
+        </div>
+        <div class="flex justify-between border-b border-[#1a1c18]/10 pb-1">
+          <span class="opacity-70">TRANSACTION REF:</span><span class="font-bold">PRV-7840192-TX</span>
+        </div>
+      </div>
+
+      <!-- Barcode section -->
+      <div class="mt-6 pt-4 border-t border-dashed border-[#1a1c18]/30 flex flex-col items-center z-10 relative">
+        <span class="font-['Space_Mono'] text-[8px] tracking-[0.25em] text-[#1a1c18]/60 mb-2">SCAN MANIFEST BARCODE</span>
+        <span class="font-['Libre_Barcode_39'] text-5xl tracking-widest text-[#1a1c18]">*PRV-7840192-TX*</span>
+        <span class="font-['Space_Mono'] text-[9px] tracking-widest text-[#1a1c18] mt-1 font-bold">PRV-7840192-TX</span>
+      </div>
+
+      <!-- Done Action Button (Brutalist style) -->
+      <button id="btn-success-close" type="button" class="w-full bg-[#1a1c18] hover:bg-[#2e312b] text-[#ebe9de] py-3.5 font-bold text-xs tracking-widest uppercase transition-colors z-10 relative mt-8">
+        CLOSE RECEIPT
+      </button>
+    </div>
+  </div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
