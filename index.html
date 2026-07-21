@@ -254,47 +254,36 @@
       </div>
     </section>
 
-    <!-- ========== SCREEN 2: CLARIFICATION (Dropdowns) ========== -->
+    <!-- ========== SCREEN 2: PREFERENCES & TRACKS ========== -->
     <section id="screen-clarify" class="screen flex-col flex-1 px-6 py-12 md:py-20 justify-center items-center">
-      <div class="max-w-lg w-full">
+      <div class="max-w-xl w-full">
         <div class="text-center mb-8">
           <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// CUSTOMIZE YOUR EXPERIENCE //</span>
-          <h2 class="text-3xl font-bold mb-2 text-text">PREFERENCES</h2>
-          <p class="text-text/75 text-xs font-mono uppercase">Update the properties below to optimize curation.</p>
+          <h2 class="text-3xl font-bold mb-2 text-text">PREFERENCES & TRACKS</h2>
+          <p class="text-text/75 text-xs font-mono uppercase">Update your preferences and review the tracks to be explored.</p>
         </div>
 
-        <div id="clarify-questions" class="space-y-4 bg-card-bg p-6 border border-border-col transition-colors">
+        <!-- Preferences -->
+        <div id="clarify-questions" class="space-y-4 bg-card-bg p-6 border border-border-col transition-colors mb-6">
           <!-- JS populated with Select Dropdowns (Opaque, sharp) -->
         </div>
 
-        <button
-          id="btn-generate-roadmap"
-          type="button"
-          class="mt-6 w-full bg-accent hover:bg-accent/90 text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
-        >
-          <i class="fa-solid fa-microchip text-xs"></i>
-          GENERATE OPTIONS
-        </button>
-      </div>
-    </section>
-
-    <!-- ========== SCREEN 3: ROADMAP PREVIEW ========== -->
-    <section id="screen-roadmap" class="screen flex-col flex-1 px-6 py-10 md:py-16 justify-center items-center">
-      <div class="max-w-xl w-full">
-        <div class="text-center mb-8">
-          <span class="label-mono text-xs text-accent font-bold tracking-[0.2em] mb-2 block">// TRACK SELECTION //</span>
-          <h2 class="text-3xl font-bold mb-2 text-text">REFINE YOUR TRACKS</h2>
-          <p class="text-text/70 text-xs font-mono uppercase">De-select entire tracks before initiating options swipe.</p>
+        <!-- Roadmap Tracks -->
+        <div class="mb-8">
+          <div class="text-left mb-4">
+            <h3 class="text-lg font-bold text-text font-mono uppercase">YOUR TRACKS</h3>
+            <p class="text-[10px] text-text/60 font-mono uppercase">De-select any tracks you wish to exclude</p>
+          </div>
+          <div id="roadmap-tracks" class="space-y-3">
+            <!-- JS populated: List of tracks/categories with delete buttons -->
+          </div>
         </div>
 
-        <div id="roadmap-tracks" class="space-y-3 mb-8">
-          <!-- JS populated: List of tracks/categories with delete buttons -->
-        </div>
-
+        <!-- Start Button -->
         <button
           id="btn-start-swiping"
           type="button"
-          class="w-full bg-accent text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col"
+          class="w-full bg-accent text-bg py-4 font-bold text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 border border-border-col hover:bg-accent/90"
         >
           <span>START SWIPING</span>
           <i class="fa-solid fa-play text-[10px]"></i>

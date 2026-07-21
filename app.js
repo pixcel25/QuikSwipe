@@ -205,7 +205,6 @@ const MOCK_DATA = {
 const screens = {
   prompt:   document.getElementById('screen-prompt'),
   clarify:  document.getElementById('screen-clarify'),
-  roadmap:  document.getElementById('screen-roadmap'),
   swipe:    document.getElementById('screen-swipe'),
 };
 
@@ -213,8 +212,7 @@ const UI = {
   categoryCards:      document.querySelectorAll('.category-card'),
   mainPrompt:         document.getElementById('main-prompt'),
   btnSubmitPrompt:    document.getElementById('btn-submit-prompt'),
-  clarifyQuestions:    document.getElementById('clarify-questions'),
-  btnGenerateRoadmap:  document.getElementById('btn-generate-roadmap'),
+  clarifyQuestions:   document.getElementById('clarify-questions'),
   roadmapTracks:      document.getElementById('roadmap-tracks'),
   btnStartSwiping:    document.getElementById('btn-start-swiping'),
   categoryTabs:       document.getElementById('category-tabs'),
@@ -283,14 +281,12 @@ const app = {
       this.submitCategory();
     });
 
-    UI.btnGenerateRoadmap.addEventListener('click', (e) => {
-      e.preventDefault();
-      this.generateRoadmap();
-    });
-
+    // Start swiping from clarify screen
     UI.btnStartSwiping.addEventListener('click', (e) => {
       e.preventDefault();
-      this.startSwiping();
+      if (!UI.btnStartSwiping.hasAttribute('disabled')) {
+        this.startSwiping();
+      }
     });
 
     UI.btnSwipeLeft.addEventListener('click', (e) => {
@@ -410,6 +406,11 @@ const app = {
   submitCategory() {
     if (!state.selectedCategory) return;
     this.renderPrefilled(MOCK_DATA[state.selectedCategory].prefilled);
+    
+    // Generate roadmap tracks automatically alongside preferences
+    state.roadmapTracks = JSON.parse(JSON.stringify(MOCK_DATA[state.selectedCategory].categories));
+    this.renderRoadmapTracks();
+    
     this.showScreen('clarify');
   },
 
@@ -442,16 +443,7 @@ const app = {
     });
   },
 
-  // ─── Screen 3: Roadmap Preview ─── //
-  generateRoadmap() {
-    const key = state.selectedCategory;
-    if (!key) return;
-
-    state.roadmapTracks = JSON.parse(JSON.stringify(MOCK_DATA[key].categories));
-    this.renderRoadmapTracks();
-    this.showScreen('roadmap');
-  },
-
+  // ─── Render Roadmap Tracks ─── //
   renderRoadmapTracks() {
     UI.roadmapTracks.innerHTML = '';
 
